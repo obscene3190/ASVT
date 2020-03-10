@@ -1,5 +1,5 @@
-from collections import defaultdict
 from prettytable import PrettyTable
+from sympy.logic import simplify_logic
 
 # Структура для элемента уровня. Содержит строку-значение и атрибут "было ли сравнение"
 class LvlSet:
@@ -42,7 +42,7 @@ def Input():
         sets.append(LvlSet(line))
     return sets, sets_list
 
-# функция выделения финальных импликант хэштег_gовнокод
+# функция выделения финальных импликант
 def Prime_implicants(sets):
     # imps, изначально n значений
     was_compare = 1 # флаг, показывающий, было ли произведено хоть одно сравнение(и сформирван след. уровень)
@@ -78,7 +78,7 @@ def Create_table(sets, imps):
     print(sets, imps)
     th = sets
     td = dict()
-    # делоем строчечьки
+    # формируем строки
     for imp in imps:
         td[imp] = [0]*(len(sets)-1)
         td[imp].insert(0, imp)
@@ -90,12 +90,27 @@ def Create_table(sets, imps):
     for key in td.keys():
         table.add_row(td[key])
     print(table)
-    f = open('text.txt', 'w')
-    f.write(str(table))# Печатoем таблицу
+    ff = open('text.txt', 'w')
+    ff.write(str(table))# Печатаем таблицу
+    return table
+
+# функция для упрощения полученного списка первичных испликант
+def Simplify(imps):
+    p = ['a', 'b', 'c', 'd', 'e', 'f']
+    dnf = ''
+    for imp in imps:
+        imp_s = ''
+        for i in range(0, 6):
+            if (imp[i] == '0'): imp_s +=' & ' + '~' + p[i]
+            if (imp[i] == '1'): imp_s +=' & ' + p[i]
+            if (imp[i] == '~'): imp_s += ''
+        dnf +='(' + imp_s[3:] + ') | '
+    dnf = dnf[0:-3]
+    dnf = str(simplify_logic(dnf, 'dnf'))
+    print(dnf)   
 
 if __name__ == "__main__":
-    #print(os.listdir(os.getcwd()))
     group_lvl, sets = Input()
     imps = Prime_implicants(group_lvl)
-    
     Create_table(sets,imps)
+    Simplify(imps)
